@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>frontend-project-11</title>
     <link rel="stylesheet" href="src/styles/bootstrap.min .css">
-    <script type="module" src="src/main.js" ></script>
+    <script type="module" src="src/main.js" defer></script>
   </head>
   <body>
     <header class="container-fluid bg-dark p-5">
@@ -18,7 +18,7 @@
                   <div class="col">
                       <div class="form-floating">
                           <input id="url-input" type="text" autofocus required name="url" aria-label="url" class="form-control w-100" placeholder="ссылка RSS" autocomplete="off">
-                          <label for="url-input">ссылка RSS</label>
+                          <label for="url-input">Cсылка RSS</label>
                       </div>
                   </div>
                   <div class="col-auto">
@@ -31,5 +31,13 @@
         </div>
       </div>
     </header>
+    <main>
+      <section class="container-fluid container-xxl p-5">
+        <div class="row">
+          <div class="col-md-10 col-lg-8 order-1 mx-auto posts"></div>
+          <div class="col-md-10 col-lg-4 order-0 order-lg-1 mx-auto feeds"></div>
+        </div>
+      </section>
+    </main>
   </body>
 </html>
