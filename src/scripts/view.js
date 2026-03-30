@@ -22,8 +22,45 @@ const createSectionCard = (title) => {
 
 
 
-export default (initState, i18n, input, submitButton, urlStateField, feeds, posts) => {
+export default (input, submitButton, urlStateField, feeds, posts, modal) => (initState, i18n) => {
     const watchedState = proxy(initState)
+
+    const renderForm = () => {
+        const { requestForm } = snapshot(watchedState).ui
+        const validationError = requestForm.validationError
+        const requestError = requestForm.requestProcess.error
+        const requestState = requestForm.requestProcess.state
+
+        switch (requestState) {
+            case 'filling':
+                break
+            case 'processing':
+                submitButton.setAttribute('disabled', true)
+                break
+            case 'failed_validation':
+                submitButton.removeAttribute('disabled')
+                input.classList.add('is-invalid')
+                urlStateField.classList.add('text-danger')
+                urlStateField.classList.remove('text-success')
+                urlStateField.textContent = i18n.t(`validationError.${validationError}`)
+                break
+            case 'failed_request':
+                submitButton.removeAttribute('disabled')
+                input.classList.remove('is-invalid')
+                urlStateField.classList.add('text-danger')
+                urlStateField.textContent = i18n.t(`requestStatus.${requestError}`)
+                break
+            case 'success':
+                submitButton.removeAttribute('disabled')
+                input.classList.remove('is-invalid')
+                input.value = ''
+                input.focus()
+                urlStateField.classList.remove('text-danger')
+                urlStateField.classList.add('text-success')
+                urlStateField.textContent = i18n.t(`requestStatus.succes_request`)
+                break
+        }
+    }
 
     const renderFeeds = () => {
         const { data } = snapshot(watchedState)
@@ -89,46 +126,27 @@ export default (initState, i18n, input, submitButton, urlStateField, feeds, post
         posts.append(postsSection)
     }
 
-    const renderForm = () => {
-        const { requestForm } = snapshot(watchedState).ui
-        const validationError = requestForm.validationError
-        const requestError = requestForm.requestProcess.error
-        const requestState = requestForm.requestProcess.state
+    const renderModal = () => {
+        const { modalDialog } = snapshot(watchedState).ui
+        const activePost = watchedState.data.posts.filter(post => post.postId === modalDialog.activePost)[0]
+        const modalTitle = modal.querySelector('.modal-title')
+        const modalDescription = modal.querySelector('.modal-body')
 
-        switch (requestState) {
-            case 'filling':
-                break
-            case 'processing':
-                submitButton.setAttribute('disabled', true)
-                break
-            case 'failed_validation':
-                submitButton.removeAttribute('disabled')
-                input.classList.add('is-invalid')
-                urlStateField.classList.add('text-danger')
-                urlStateField.classList.remove('text-success')
-                urlStateField.textContent = i18n.t(`validationError.${validationError}`)
-                break
-            case 'failed_request':
-                submitButton.removeAttribute('disabled')
-                input.classList.remove('is-invalid')
-                urlStateField.classList.add('text-danger')
-                urlStateField.textContent = i18n.t(`requestStatus.${requestError}`)
-                break
-            case 'success':
-                submitButton.removeAttribute('disabled')
-                input.classList.remove('is-invalid')
-                input.value = ''
-                input.focus()
-                urlStateField.classList.remove('text-danger')
-                urlStateField.classList.add('text-success')
-                urlStateField.textContent = i18n.t(`requestStatus.succes_request`)
-                break
-        }
+        const detailsButton = modal.querySelector('#modal-details-btn')
+        detailsButton.setAttribute('href', activePost.postLink)
+        const closeButton = modal.querySelector('#modal-close-btn')
+
+        modalTitle.textContent = activePost.postTitle
+        modalDescription.textContent =activePost.postDescription
+        detailsButton.textContent = i18n.t('ui.modal.detailsButton')
+        closeButton.textContent = i18n.t('ui.modal.closeButton')
     }
+
 
     subscribe(watchedState.ui.requestForm, renderForm)
     subscribe(watchedState.data, renderFeeds)
     subscribe(watchedState.data, renderPosts)
+    subscribe(watchedState.ui.modalDialog, renderModal)
 
     return watchedState
 }

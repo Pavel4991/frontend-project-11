@@ -41,7 +41,6 @@ export default (response, url) => {
         post.feedId = feed.feedId
         return post
     })
-    
 
     return { feed, posts }
 }

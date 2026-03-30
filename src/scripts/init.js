@@ -10,8 +10,11 @@ const runApp = async () => {
     const submitButton = inputForm.querySelector('button[type="submit"]')
     const input = document.getElementById('url-input')
     const urlStateField = document.querySelector('.feedback')
-    const feeds = document.querySelector('.feeds')
-    const posts = document.querySelector('.posts')
+    const feeds = document.getElementById('feeds')
+    const posts = document.getElementById('posts')
+    const modal = document.getElementById('modal')
+
+    const renderElements = render(input, submitButton, urlStateField, feeds, posts, modal)
 
     const initialState = {
         ui: {
@@ -24,6 +27,9 @@ const runApp = async () => {
                     state: 'filling',
                     error: '',
                 }
+            },
+            modalDialog: {
+                activePost: ''
             }
         },
         data: {
@@ -36,13 +42,12 @@ const runApp = async () => {
     const i18nextInstance = i18n.createInstance()
     await i18nextInstance.init({
         lng: 'ru',
-        debug: true,
+        debug: false,
         resources
     })
 
-    const watchedState = render(initialState, i18nextInstance, input, submitButton, urlStateField, feeds, posts)
+    const watchedState = renderElements(initialState, i18nextInstance)
 
-    // ... CONTOROLLER ...
     inputForm.addEventListener('submit', async (event) => {
         event.preventDefault()
 
@@ -56,6 +61,7 @@ const runApp = async () => {
 
         const currentFeeds = watchedState.data.feeds.map(feed => feed.feedUrl)
         
+        
 
         await validateUrl(url, currentFeeds)
             .then(validUrl => {
@@ -63,7 +69,7 @@ const runApp = async () => {
                     return
                 }
                 watchedState.ui.requestForm.validationError = ''
-                return makeRequest(validUrl, watchedState)
+                return makeRequest(validUrl)
             })
             .then(response => {
                 if (!response) {
@@ -78,10 +84,12 @@ const runApp = async () => {
                 watchedState.data.feeds = watchedState.data.feeds.concat(data.feed)
                 watchedState.data.posts = watchedState.data.posts.concat(data.posts)
                 watchedState.ui.requestForm.requestProcess.state = 'success'
+
             })
             .catch(error => {
                 const validationErrors = ['duplicate_url', 'empty_url', 'incorrect_url']
                 const requestErrors = ['network_error', 'parser_error']
+                console.log(error.message)
 
                 if (validationErrors.includes(error.message)) {
                     watchedState.ui.requestForm.validationError = error.message
@@ -92,7 +100,6 @@ const runApp = async () => {
                     watchedState.ui.requestForm.requestProcess.state = 'failed_request'
                 }
             })
-        
     })
 
     posts.addEventListener('click', (event) => {
@@ -100,6 +107,7 @@ const runApp = async () => {
         const postId = target.dataset.id
         if (postId) {
             watchedState.data.seenPosts = watchedState.data.seenPosts.concat({ postId })
+            watchedState.ui.modalDialog.activePost = postId
         } else {
             return
         }

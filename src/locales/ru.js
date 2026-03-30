@@ -4,6 +4,10 @@ export default {
             feedsTitle: 'Фиды',
             postsTitle: 'Посты',
             postButton: 'Просмотр',
+            modal: {
+                detailsButton: 'Читать полностью',
+                closeButton: 'Закрыть',
+            }
         },
         validationError: {
             incorrect_url: 'Ссылка должна быть валидным URL',
