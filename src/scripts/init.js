@@ -4,6 +4,8 @@ import render from './view'
 import resources from '../locales/index'
 import makeRequest from "./makeRequest"
 import parser from "./parser"
+import _ from 'lodash'
+import { proxySet } from 'valtio/vanilla/utils'
 
 const runApp = async () => {
     const inputForm = document.querySelector('.rss-form')
@@ -13,6 +15,7 @@ const runApp = async () => {
     const feeds = document.getElementById('feeds')
     const posts = document.getElementById('posts')
     const modal = document.getElementById('modal')
+
 
     const renderElements = render(input, submitButton, urlStateField, feeds, posts, modal)
 
@@ -30,12 +33,12 @@ const runApp = async () => {
             },
             modalDialog: {
                 activePost: ''
-            }
+            },
+            seenPosts: proxySet()
         },
         data: {
             feeds: [],
             posts: [],
-            seenPosts: []
         }
     }
 
@@ -60,9 +63,28 @@ const runApp = async () => {
         watchedState.ui.requestForm.requestProcess.error = ''
 
         const currentFeeds = watchedState.data.feeds.map(feed => feed.feedUrl)
-        
-        
 
+        const repeatRequest = async (url, feedId) => {
+            const requestTimeout = async (url) => {
+                setTimeout(() => repeatRequest(url, feedId), 5000)
+            }
+
+            await makeRequest(url)
+                .then(response => parser(response))
+                .then(data => {
+                    const posts = data.posts
+                    const currentPosts = watchedState.data.posts.map(post => post.postLink)
+                    currentPosts.map(post => post.postLink)
+                    const newPosts = posts.filter(({ postLink }) => !currentPosts.includes(postLink))
+                    newPosts.map(post => {
+                            post.feedId = feedId
+                            post.postId = _.uniqueId('post_')
+                        })
+                    watchedState.data.posts = watchedState.data.posts.concat(newPosts)
+                })
+            requestTimeout(url)
+        }
+        
         await validateUrl(url, currentFeeds)
             .then(validUrl => {
                 if(!validUrl) {
@@ -78,18 +100,23 @@ const runApp = async () => {
                 return parser(response, url)
             })
             .then(data => {
-                if (!data) {
-                    return
-                }
-                watchedState.data.feeds = watchedState.data.feeds.concat(data.feed)
-                watchedState.data.posts = watchedState.data.posts.concat(data.posts)
+                const feed = data.feed
+                feed.feedId = _.uniqueId('feed_')
+                watchedState.data.feeds = watchedState.data.feeds.concat(feed)
+                const posts = data.posts.reverse()
+                posts.map(post => {
+                    post.feedId = feed.feedId
+                    post.postId = _.uniqueId('post_')
+                })
+                watchedState.data.posts = watchedState.data.posts.concat(posts)
                 watchedState.ui.requestForm.requestProcess.state = 'success'
+
+                watchedState.data.feeds.forEach(feed => repeatRequest(feed.feedUrl, feed.feedId));
 
             })
             .catch(error => {
                 const validationErrors = ['duplicate_url', 'empty_url', 'incorrect_url']
                 const requestErrors = ['network_error', 'parser_error']
-                console.log(error.message)
 
                 if (validationErrors.includes(error.message)) {
                     watchedState.ui.requestForm.validationError = error.message
@@ -106,7 +133,7 @@ const runApp = async () => {
         const target = event.target
         const postId = target.dataset.id
         if (postId) {
-            watchedState.data.seenPosts = watchedState.data.seenPosts.concat({ postId })
+            watchedState.ui.seenPosts = watchedState.ui.seenPosts.add(postId)
             watchedState.ui.modalDialog.activePost = postId
         } else {
             return
@@ -114,6 +141,5 @@ const runApp = async () => {
     })
 
 }
-
 
 export default runApp

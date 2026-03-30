@@ -1,22 +1,16 @@
-import _ from 'lodash'
-
 const textContentParser = (node, nodeType = 'feed') => {
     const nodeTitle = node.querySelector('title').textContent
     const nodeDescription = node.querySelector('description').textContent
 
     if (nodeType === 'feed') {
-        const feedId = _.uniqueId('feed_')
-        return { 
-            feedId, 
+        return {  
             feedTitle: nodeTitle, 
             feedDescription: nodeDescription 
         }
     } 
     if (nodeType === 'post') {
-        const postId = _.uniqueId('post_')
         const postLink = node.querySelector('link').textContent
         return { 
-            postId,
             postLink, 
             postTitle: nodeTitle, 
             postDescription: nodeDescription 
@@ -36,11 +30,7 @@ export default (response, url) => {
     const feed = textContentParser(parsedData)
     feed.feedUrl = url
     const items = Array.from(parsedData.querySelectorAll('item'))
-    const posts = items.map(node => {
-        const post = textContentParser(node, 'post')
-        post.feedId = feed.feedId
-        return post
-    })
+    const posts = items.map(node => textContentParser(node, 'post'))
 
     return { feed, posts }
 }

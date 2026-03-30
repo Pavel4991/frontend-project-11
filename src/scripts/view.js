@@ -1,6 +1,6 @@
 import { proxy, subscribe, snapshot } from 'valtio/vanilla'
 
-const createSectionCard = (title) => {
+const createSection = (title) => {
     const feedCard = document.createElement('div')
     feedCard.classList.add('card', 'border-0')
 
@@ -67,7 +67,8 @@ export default (input, submitButton, urlStateField, feeds, posts, modal) => (ini
         const currentFeeds = data.feeds
         
         feeds.innerHTML = ''
-        const feedsSection = createSectionCard(i18n.t(`ui.feedsTitle`))
+        const feedsSection = createSection(i18n.t(`ui.feedsTitle`))
+
         const feedsList = feedsSection.querySelector('ul')
 
         currentFeeds.forEach(feed => {
@@ -90,15 +91,15 @@ export default (input, submitButton, urlStateField, feeds, posts, modal) => (ini
     }
 
     const renderPosts = () => {
-        const { data } = snapshot(watchedState)
+        const { ui, data } = snapshot(watchedState)
         const currentPosts = data.posts
-
+        
         posts.innerHTML = ''
-        const postsSection = createSectionCard(i18n.t(`ui.postsTitle`))
+        const postsSection = createSection(i18n.t(`ui.postsTitle`))
         const postsList = postsSection.querySelector('ul')
 
         currentPosts.forEach(post => {
-            const seenPostCheck = data.seenPosts.find(({ postId }) => postId === post.postId)
+            const seenPostCheck = ui.seenPosts.has(post.postId)
 
             const postItem = document.createElement('li')
             postItem.classList.add('list-group-item', 'border-0', 'border-end-0')
@@ -121,7 +122,7 @@ export default (input, submitButton, urlStateField, feeds, posts, modal) => (ini
             postItemButton.textContent = i18n.t('ui.postButton')
 
             postItem.append(postItemLink, postItemButton)
-            postsList.append(postItem)
+            postsList.prepend(postItem)
         })
         posts.append(postsSection)
     }
@@ -142,10 +143,10 @@ export default (input, submitButton, urlStateField, feeds, posts, modal) => (ini
         closeButton.textContent = i18n.t('ui.modal.closeButton')
     }
 
-
     subscribe(watchedState.ui.requestForm, renderForm)
     subscribe(watchedState.data, renderFeeds)
     subscribe(watchedState.data, renderPosts)
+    subscribe(watchedState.ui.seenPosts, renderPosts)
     subscribe(watchedState.ui.modalDialog, renderModal)
 
     return watchedState
