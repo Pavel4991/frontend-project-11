@@ -13,8 +13,8 @@ const runApp = async () => {
     const submitButton = inputForm.querySelector('button[type="submit"]')
     const input = document.getElementById('url-input')
     const urlStateField = document.querySelector('.feedback')
-    const feeds = document.getElementById('feeds')
-    const posts = document.getElementById('posts')
+    const feeds = document.querySelector('.feeds')
+    const posts = document.querySelector('.posts')
     const modal = new bootstrap.Modal(document.getElementById('modal'))
 
     const renderElements = render(input, submitButton, urlStateField, feeds, posts, modal)
@@ -104,9 +104,10 @@ const runApp = async () => {
                 feed.feedId = _.uniqueId('feed_')
                 watchedState.data.feeds = watchedState.data.feeds.concat(feed)
                 const posts = data.posts.toReversed()
-                posts.map(post => {
+                posts.forEach(post => {
                     post.feedId = feed.feedId
                     post.postId = _.uniqueId('post_')
+                    return post
                 })
                 watchedState.data.posts = watchedState.data.posts.concat(posts)
                 watchedState.ui.requestForm.requestProcess.state = 'success'
