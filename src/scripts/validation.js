@@ -18,12 +18,9 @@ const validateUrl = async (url, feeds) => {
             .notOneOf(feeds) 
     });
 
-    try {
-        await schema.validate({ url })
-        return url
-    } catch (error) {
-        throw error
-    }
+    await schema.validate({ url })
+    return url
+
 }
 
 export default validateUrl

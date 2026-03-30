@@ -18,7 +18,7 @@ const textContentParser = (node, nodeType = 'feed') => {
     }
 }
 
-export default (response, url) => {
+const parser = (response, url) => {
     const parser = new DOMParser()
     const parsedData = parser.parseFromString(response.data.contents, 'application/xml')
     const parseError = parsedData.querySelector('parsererror')
@@ -34,3 +34,5 @@ export default (response, url) => {
 
     return { feed, posts }
 }
+
+export default parser

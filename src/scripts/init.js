@@ -6,6 +6,7 @@ import makeRequest from "./makeRequest"
 import parser from "./parser"
 import _ from 'lodash'
 import { proxySet } from 'valtio/vanilla/utils'
+import * as bootstrap from 'bootstrap'
 
 const runApp = async () => {
     const inputForm = document.querySelector('.rss-form')
@@ -14,8 +15,7 @@ const runApp = async () => {
     const urlStateField = document.querySelector('.feedback')
     const feeds = document.getElementById('feeds')
     const posts = document.getElementById('posts')
-    const modal = document.getElementById('modal')
-
+    const modal = new bootstrap.Modal(document.getElementById('modal'))
 
     const renderElements = render(input, submitButton, urlStateField, feeds, posts, modal)
 
@@ -51,6 +51,27 @@ const runApp = async () => {
 
     const watchedState = renderElements(initialState, i18nextInstance)
 
+    const repeatRequest = async (url, feedId) => {
+        const requestTimeout = async (url) => {
+            setTimeout(() => repeatRequest(url, feedId), 5000)
+        }
+
+        await makeRequest(url)
+            .then(response => parser(response))
+            .then(data => {
+                const posts = data.posts
+                const currentPosts = watchedState.data.posts.map(post => post.postLink)
+                currentPosts.map(post => post.postLink)
+                const newPosts = posts.filter(({ postLink }) => !currentPosts.includes(postLink))
+                newPosts.forEach(post => {
+                        post.feedId = feedId
+                        post.postId = _.uniqueId('post_')
+                    })
+                watchedState.data.posts = watchedState.data.posts.concat(newPosts)
+            })
+        requestTimeout(url)
+    }
+
     inputForm.addEventListener('submit', async (event) => {
         event.preventDefault()
 
@@ -63,27 +84,6 @@ const runApp = async () => {
         watchedState.ui.requestForm.requestProcess.error = ''
 
         const currentFeeds = watchedState.data.feeds.map(feed => feed.feedUrl)
-
-        const repeatRequest = async (url, feedId) => {
-            const requestTimeout = async (url) => {
-                setTimeout(() => repeatRequest(url, feedId), 5000)
-            }
-
-            await makeRequest(url)
-                .then(response => parser(response))
-                .then(data => {
-                    const posts = data.posts
-                    const currentPosts = watchedState.data.posts.map(post => post.postLink)
-                    currentPosts.map(post => post.postLink)
-                    const newPosts = posts.filter(({ postLink }) => !currentPosts.includes(postLink))
-                    newPosts.map(post => {
-                            post.feedId = feedId
-                            post.postId = _.uniqueId('post_')
-                        })
-                    watchedState.data.posts = watchedState.data.posts.concat(newPosts)
-                })
-            requestTimeout(url)
-        }
         
         await validateUrl(url, currentFeeds)
             .then(validUrl => {
@@ -103,7 +103,7 @@ const runApp = async () => {
                 const feed = data.feed
                 feed.feedId = _.uniqueId('feed_')
                 watchedState.data.feeds = watchedState.data.feeds.concat(feed)
-                const posts = data.posts.reverse()
+                const posts = data.posts.toReversed()
                 posts.map(post => {
                     post.feedId = feed.feedId
                     post.postId = _.uniqueId('post_')

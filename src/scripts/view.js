@@ -22,7 +22,7 @@ const createSection = (title) => {
 
 
 
-export default (input, submitButton, urlStateField, feeds, posts, modal) => (initState, i18n) => {
+const render = (input, submitButton, urlStateField, feeds, posts, modal) => (initState, i18n) => {
     const watchedState = proxy(initState)
 
     const renderForm = () => {
@@ -35,11 +35,14 @@ export default (input, submitButton, urlStateField, feeds, posts, modal) => (ini
             case 'filling':
                 break
             case 'processing':
+                input.setAttribute('disabled', true)
                 submitButton.setAttribute('disabled', true)
                 break
             case 'failed_validation':
                 submitButton.removeAttribute('disabled')
                 input.classList.add('is-invalid')
+                input.removeAttribute('disabled')
+                input.focus()
                 urlStateField.classList.add('text-danger')
                 urlStateField.classList.remove('text-success')
                 urlStateField.textContent = i18n.t(`validationError.${validationError}`)
@@ -47,12 +50,15 @@ export default (input, submitButton, urlStateField, feeds, posts, modal) => (ini
             case 'failed_request':
                 submitButton.removeAttribute('disabled')
                 input.classList.remove('is-invalid')
+                input.removeAttribute('disabled')
+                input.focus()
                 urlStateField.classList.add('text-danger')
                 urlStateField.textContent = i18n.t(`requestStatus.${requestError}`)
                 break
             case 'success':
                 submitButton.removeAttribute('disabled')
                 input.classList.remove('is-invalid')
+                input.removeAttribute('disabled')
                 input.value = ''
                 input.focus()
                 urlStateField.classList.remove('text-danger')
@@ -102,23 +108,22 @@ export default (input, submitButton, urlStateField, feeds, posts, modal) => (ini
             const seenPostCheck = ui.seenPosts.has(post.postId)
 
             const postItem = document.createElement('li')
-            postItem.classList.add('list-group-item', 'border-0', 'border-end-0')
-            postItem.classList.add('d-flex', 'justify-content-between', 'align-items-start')
+            postItem.classList.add('list-group-item', 'border-0', 'border-end-0', 'd-flex', 'justify-content-between', 'align-items-start')
 
             const postItemLink = document.createElement('a')
             seenPostCheck ? postItemLink.classList.add('fw-normal', 'link-secondary') : postItemLink.classList.add('fw-bold')
             postItemLink.setAttribute('href', `${post.postLink}`)
             postItemLink.setAttribute('target', '_blanck')
-            postItemLink.setAttribute('data-id', `${post.postId}`)
+            postItemLink.dataset.id = post.postId
             postItemLink.setAttribute('rel', 'noopener noreferrer')
             postItemLink.textContent = post.postTitle
 
             const postItemButton = document.createElement('button')
             postItemButton.classList.add('btn', 'btn-outline-primary', 'btn-sm')
             postItemButton.setAttribute('type', 'button')
-            postItemButton.setAttribute('data-id', `${post.postId}`)
-            postItemButton.setAttribute('data-bs-toggle', `modal`)
-            postItemButton.setAttribute('data-bs-target', `#modal`)
+            postItemButton.dataset.id = post.postId
+            postItemButton.dataset.bsToggle = 'modal'
+            postItemButton.dataset.bsTarget = '#modal'
             postItemButton.textContent = i18n.t('ui.postButton')
 
             postItem.append(postItemLink, postItemButton)
@@ -129,16 +134,17 @@ export default (input, submitButton, urlStateField, feeds, posts, modal) => (ini
 
     const renderModal = () => {
         const { modalDialog } = snapshot(watchedState).ui
-        const activePost = watchedState.data.posts.filter(post => post.postId === modalDialog.activePost)[0]
-        const modalTitle = modal.querySelector('.modal-title')
-        const modalDescription = modal.querySelector('.modal-body')
+        const activePost = watchedState.data.posts.find(post => post.postId === modalDialog.activePost)
 
-        const detailsButton = modal.querySelector('#modal-details-btn')
+        const modalTitle = modal._dialog.querySelector('.modal-title')
+        const modalDescription = modal._dialog.querySelector('.modal-body')
+        const detailsButton = modal._dialog.querySelector('#modal-details-btn')
+        const closeButton = modal._dialog.querySelector('#modal-close-btn')
+
         detailsButton.setAttribute('href', activePost.postLink)
-        const closeButton = modal.querySelector('#modal-close-btn')
 
         modalTitle.textContent = activePost.postTitle
-        modalDescription.textContent =activePost.postDescription
+        modalDescription.textContent = 'Цель: Научиться извлекать из дерева необходимые данные'
         detailsButton.textContent = i18n.t('ui.modal.detailsButton')
         closeButton.textContent = i18n.t('ui.modal.closeButton')
     }
@@ -151,3 +157,5 @@ export default (input, submitButton, urlStateField, feeds, posts, modal) => (ini
 
     return watchedState
 }
+
+export default render
