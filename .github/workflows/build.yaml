@@ -26,6 +26,6 @@ jobs:
       - run: make install
       - run: make lint
       - name: SonarQube Scan
-        uses: e694c46a8d817fcfe9b3d2a449947c502655516e
+        uses: SonarSource/sonarqube-scan-action@e694c46a8d817fcfe9b3d2a449947c502655516e
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
