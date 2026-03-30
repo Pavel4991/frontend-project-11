@@ -21,7 +21,6 @@ const createSection = (title) => {
 }
 
 
-
 const render = (input, submitButton, urlStateField, feeds, posts, modal) => (initState, i18n) => {
   const watchedState = proxy(initState)
 
@@ -69,13 +68,13 @@ const render = (input, submitButton, urlStateField, feeds, posts, modal) => (ini
   const renderFeeds = () => {
     const { data } = snapshot(watchedState)
     const currentFeeds = data.feeds
-    
+
     feeds.innerHTML = ''
     const feedsSection = createSection(i18n.t(`ui.feedsTitle`))
 
     const feedsList = feedsSection.querySelector('ul')
 
-    currentFeeds.forEach(feed => {
+    currentFeeds.forEach((feed) => {
       const feedItem = document.createElement('li')
       feedItem.classList.add('list-group-item', 'border-0', 'border-end-0')
 
@@ -97,12 +96,12 @@ const render = (input, submitButton, urlStateField, feeds, posts, modal) => (ini
   const renderPosts = () => {
     const { ui, data } = snapshot(watchedState)
     const currentPosts = data.posts
-    
+
     posts.innerHTML = ''
     const postsSection = createSection(i18n.t(`ui.postsTitle`))
     const postsList = postsSection.querySelector('ul')
 
-    currentPosts.forEach(post => {
+    currentPosts.forEach((post) => {
       const seenPostCheck = ui.seenPosts.has(post.postId)
 
       const postItem = document.createElement('li')

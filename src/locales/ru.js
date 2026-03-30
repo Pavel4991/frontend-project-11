@@ -7,7 +7,7 @@ export default {
       modal: {
         detailsButton: 'Читать полностью',
         closeButton: 'Закрыть',
-      }
+      },
     },
     validationError: {
       incorrect_url: 'Ссылка должна быть валидным URL',
@@ -19,5 +19,5 @@ export default {
       parser_error: 'Ресурс не содержит валидный RSS',
       succes_request: 'RSS успешно загружен',
     },
-  }
+  },
 }

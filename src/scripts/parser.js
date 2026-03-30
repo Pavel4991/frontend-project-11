@@ -3,17 +3,17 @@ const textContentParser = (node, nodeType = 'feed') => {
   const nodeDescription = node.querySelector('description').textContent
 
   if (nodeType === 'feed') {
-    return {  
-      feedTitle: nodeTitle, 
-      feedDescription: nodeDescription 
+    return {
+      feedTitle: nodeTitle,
+      feedDescription: nodeDescription,
     }
-  } 
+  }
   if (nodeType === 'post') {
     const postLink = node.querySelector('link').textContent
-    return { 
-      postLink, 
-      postTitle: nodeTitle, 
-      postDescription: nodeDescription 
+    return {
+      postLink,
+      postTitle: nodeTitle,
+      postDescription: nodeDescription,
     }
   }
 }
@@ -22,7 +22,7 @@ const parser = (response, url) => {
   const parser = new DOMParser()
   const parsedData = parser.parseFromString(response.data.contents, 'application/xml')
   const parseError = parsedData.querySelector('parsererror')
-  
+
   if (parseError) {
     throw new Error('parser_error')
   }

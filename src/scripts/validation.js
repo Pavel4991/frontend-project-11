@@ -1,4 +1,4 @@
-import { object, string, setLocale } from 'yup';
+import { object, string, setLocale } from 'yup'
 
 const validateUrl = async (url, feeds) => {
   setLocale({
@@ -11,11 +11,11 @@ const validateUrl = async (url, feeds) => {
     },
   })
 
-  let schema = object().shape({ 
+  let schema = object().shape({
     url: string()
       .url()
       .required()
-      .notOneOf(feeds) 
+      .notOneOf(feeds),
   })
 
   await schema.validate({ url })

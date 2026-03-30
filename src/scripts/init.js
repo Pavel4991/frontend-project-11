@@ -1,9 +1,9 @@
-import validateUrl from "./validation"
+import validateUrl from './validation'
 import i18n from 'i18next'
 import render from './view'
 import resources from '../locales/index'
-import makeRequest from "./makeRequest"
-import parser from "./parser"
+import makeRequest from './makeRequest'
+import parser from './parser'
 import _ from 'lodash'
 import { proxySet } from 'valtio/vanilla/utils'
 import * as bootstrap from 'bootstrap'
@@ -21,32 +21,32 @@ const runApp = async () => {
 
   const initialState = {
     ui: {
-      appLocale:{ 
-          lng: 'ru'
+      appLocale: {
+        lng: 'ru',
       },
-      requestForm:{
+      requestForm: {
         validationError: '',
         requestProcess: {
           state: 'filling',
           error: '',
-        }
+        },
       },
       modalDialog: {
-        activePost: ''
+        activePost: '',
       },
-      seenPosts: proxySet()
+      seenPosts: proxySet(),
     },
     data: {
-        feeds: [],
-        posts: [],
-    }
+      feeds: [],
+      posts: [],
+    },
   }
 
   const i18nextInstance = i18n.createInstance()
   await i18nextInstance.init({
     lng: 'ru',
     debug: false,
-    resources
+    resources,
   })
 
   const watchedState = renderElements(initialState, i18nextInstance)
@@ -58,15 +58,15 @@ const runApp = async () => {
 
     await makeRequest(url)
       .then(response => parser(response))
-      .then(data => {
+      .then((data) => {
         const posts = data.posts
         const currentPosts = watchedState.data.posts.map(post => post.postLink)
         currentPosts.map(post => post.postLink)
         const newPosts = posts.filter(({ postLink }) => !currentPosts.includes(postLink))
-        newPosts.forEach(post => {
-            post.feedId = feedId
-            post.postId = _.uniqueId('post_')
-            return post
+        newPosts.forEach((post) => {
+          post.feedId = feedId
+          post.postId = _.uniqueId('post_')
+          return post
         })
         watchedState.data.posts = watchedState.data.posts.concat(newPosts)
       })
@@ -85,27 +85,27 @@ const runApp = async () => {
     watchedState.ui.requestForm.requestProcess.error = ''
 
     const currentFeeds = watchedState.data.feeds.map(feed => feed.feedUrl)
-    
+
     await validateUrl(url, currentFeeds)
-      .then(validUrl => {
-        if(!validUrl) {
+      .then((validUrl) => {
+        if (!validUrl) {
           return
         }
         watchedState.ui.requestForm.validationError = ''
         return makeRequest(validUrl)
       })
-      .then(response => {
+      .then((response) => {
         if (!response) {
           return
         }
         return parser(response, url)
       })
-      .then(data => {
+      .then((data) => {
         const feed = data.feed
         feed.feedId = _.uniqueId('feed_')
         watchedState.data.feeds = watchedState.data.feeds.concat(feed)
         const posts = data.posts.toReversed()
-        posts.forEach(post => {
+        posts.forEach((post) => {
           post.feedId = feed.feedId
           post.postId = _.uniqueId('post_')
           return post
@@ -114,9 +114,8 @@ const runApp = async () => {
         watchedState.ui.requestForm.requestProcess.state = 'success'
 
         watchedState.data.feeds.forEach(feed => repeatRequest(feed.feedUrl, feed.feedId))
-
       })
-      .catch(error => {
+      .catch((error) => {
         const validationErrors = ['duplicate_url', 'empty_url', 'incorrect_url']
         const requestErrors = ['network_error', 'parser_error']
 
@@ -137,11 +136,11 @@ const runApp = async () => {
     if (postId) {
       watchedState.ui.seenPosts = watchedState.ui.seenPosts.add(postId)
       watchedState.ui.modalDialog.activePost = postId
-    } else {
-      return
+    } 
+    else { 
+      return 
     }
   })
-
 }
 
 export default runApp
