@@ -20,7 +20,6 @@ const createSection = (title) => {
   return feedCard
 }
 
-
 const render = (input, submitButton, urlStateField, feeds, posts, modal) => (initState, i18n) => {
   const watchedState = proxy(initState)
 

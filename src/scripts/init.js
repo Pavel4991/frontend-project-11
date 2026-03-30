@@ -136,9 +136,9 @@ const runApp = async () => {
     if (postId) {
       watchedState.ui.seenPosts = watchedState.ui.seenPosts.add(postId)
       watchedState.ui.modalDialog.activePost = postId
-    } 
-    else { 
-      return 
+    }
+    else {
+      return
     }
   })
 }
